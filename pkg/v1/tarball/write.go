@@ -354,6 +354,12 @@ func dedupRefToImage(refToImage map[name.Reference]v1.Image) map[v1.Image][]stri
 				ts = fmt.Sprintf("%s:%s", ts, name.DefaultTag)
 			}
 			imageToTags[img] = append(imageToTags[img], ts)
+		} else if digest, ok := ref.(name.Digest); ok && digest.TagStr() != "" {
+			if tags, ok := imageToTags[img]; ok && tags != nil {
+				imageToTags[img] = append(tags, digest.Tag().String())
+			} else {
+				imageToTags[img] = []string{digest.Tag().String()}
+			}
 		} else {
 			if _, ok := imageToTags[img]; !ok {
 				imageToTags[img] = nil
