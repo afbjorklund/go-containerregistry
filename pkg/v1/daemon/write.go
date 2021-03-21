@@ -54,7 +54,7 @@ func Tag(src, dest name.Tag) error {
 }
 
 // Write saves the image into the daemon as the given tag.
-func Write(ref name.Reference, img v1.Image) (string, error) {
+func Write(ref name.Reference, img v1.Image, opts ...tarball.WriteOption) (string, error) {
 	cli, err := GetImageLoader()
 	if err != nil {
 		return "", err
@@ -62,7 +62,7 @@ func Write(ref name.Reference, img v1.Image) (string, error) {
 
 	pr, pw := io.Pipe()
 	go func() {
-		pw.CloseWithError(tarball.Write(ref, img, pw))
+		pw.CloseWithError(tarball.Write(ref, img, pw, opts...))
 	}()
 
 	// write the image in docker save format first, then load it
