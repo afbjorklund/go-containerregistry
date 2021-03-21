@@ -30,6 +30,7 @@ import (
 // ImageLoader is an interface for testing.
 type ImageLoader interface {
 	ImageLoad(context.Context, io.Reader, bool) (types.ImageLoadResponse, error)
+	ImagePull(context.Context, string, types.ImagePullOptions) (io.ReadCloser, error)
 	ImageTag(context.Context, string, string) error
 }
 
@@ -76,5 +77,12 @@ func Write(ref name.Reference, img v1.Image, opts ...tarball.WriteOption) (strin
 	if readErr != nil {
 		return response, fmt.Errorf("error reading load response body: %v", err)
 	}
+	// pull the image from the registry, to get the digest too
+	pull, err := cli.ImagePull(context.Background(), ref.Name(), types.ImagePullOptions{})
+	if err != nil {
+		return "", fmt.Errorf("error pulling image: %v", err)
+	}
+	defer pull.Close()
+	b, _ = ioutil.ReadAll(pull)
 	return response, nil
 }
